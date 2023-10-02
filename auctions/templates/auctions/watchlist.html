@@ -1,0 +1,42 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+  <h2>Watchlist</h2>
+
+  {% if not watchlist %}
+    <p>No watchlist to show.</p>
+  {% endif %}
+
+  {% for item in watchlist %}
+  <div class="container-fluid">
+    <div class="row border-top my-2">
+      <div class="col-3 d-flex align-items-center">
+          {% if item.listing.url %}
+            <a href="{% url 'listing' item.listing.id %}">
+              <img class="img-fluid border my-2" src="{{ item.listing.url }}" alt="{{ item.listing.title }}">
+            </a>
+          {% else %}
+          <p class="m-auto">Image unavailable.</p>
+          {% endif %}
+      </div>
+      <div class="col mt-3 d-flex flex-column justify-content-between">
+          <div>
+            <h3 class="font-weight-bold">
+              <a href="{% url 'listing' item.listing.id %}">{{ item.listing.title }}</a>
+            </h3> 
+            <p>{{ item.listing.description }}</p> 
+          </div>
+          <div class="mb-2">
+              <h4>Price: <span class="font-weight-bold">€{{ item.listing.price_else_highest_bid }}</span></h4> 
+              <p>Created {{ item.listing.date }} by {{ item.listing.user }}</p>
+              {% if item.listing.active == True %}
+                <p class="text-success">Status: Active</p>
+              {% else %}
+              <p class="text-danger">Status: Closed</p>
+              {% endif %}
+          </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% endblock %}

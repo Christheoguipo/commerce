@@ -1,0 +1,216 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+  <h2>Listing: {{ listing.title }}</h2>
+
+  {% if user.is_authenticated %}
+    <form action="{% url 'listing' listing.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_name" value="watchlist_form">
+      {% if isWatchlist == True %}
+        <button id="remove-from-watchlist" class="badge bg-secondary" type="submit">Watchlist</button>
+      {% else %}
+        <button id="add-to-watchlist" class="badge bg-secondary" type="submit">Add to Watchlist</button>
+      {% endif %}
+    </form>
+  {% endif %}
+
+  <div class="container-fluid">
+    {% if listing.active == False %}
+      {% if user == listing.highest_bidder %}
+      <div class="row">
+        <div class="col">
+          <div class="alert alert-success my-2" role="alert">
+              Congratulations {{ listing.highest_bidder }}! You have won the bid!
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    {% endif %}
+
+    
+    <div class="row">
+      <div class="col">
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-success my-2" role="alert">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    
+
+    <div class="row">
+      <div class="col-3 d-flex align-items-center">
+          {% if listing.url %}
+            <img class="img-fluid my-2" style="max-height: 525px;" src="{{ listing.url }}" alt="{{ listing.title }}">
+          {% else %}
+            <p class="m-auto">Image unavailable.</p>
+          {% endif %}
+      </div>
+      <div class="col d-flex flex-column justify-content-between">
+          <div class="mx-5">
+            <p>{{ listing.description }}</p> 
+          </div>
+          <div class="mx-5">
+              <h4>Price: <span class="font-weight-bold">€{{ listing.price_else_highest_bid }}</span></h4> 
+              <p>Created {{ listing.date }} by {{ listing.user }}</p>
+              {% if listing.active == True %}
+              <p class="text-success">Status: Active</p>
+              {% else %}
+                <p class="text-danger">Status: Closed</p>
+              {% endif %}
+          </div>
+      </div>
+    </div>
+
+    {% if user.is_authenticated %}
+
+      {% if listing.active == True %}
+        
+        {% if not user == seller  %}
+        <div class="row">
+          <div class="col">
+            <div class="border-top pt-2">
+
+
+            <form id="bidForm" action="{% url 'listing' listing.id %}" method="post">
+
+              {% csrf_token %}
+              <input type="hidden" name="form_name" value="bid_form">
+              
+              <div class="input-group">
+                <span class="input-group-text">€</span>
+                {{ form.bid_amount }}
+                <span class="input-group-text">.00</span>
+              </div>
+              {{ form.bid_amount.errors }}
+
+              {{ form.listing_price }}
+              {{ form.has_bid }}
+              
+              <!-- <button class="btn btn-primary mt-2" type="submit">Place Bid</button> -->
+
+            </form>
+
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#bidModal">
+              Place Bid
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="bidModal" tabindex="-1" aria-labelledby="bidModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="bidModalLabel">Confirmation</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    Are you sure you want to place the bid?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="bidForm">Place Bid</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- <form action="{% url 'listing' listing.id %}" method="post">
+
+              {% csrf_token %}
+              <input type="hidden" name="form_name" value="bid_form">
+              
+              <div class="input-group">
+                <span class="input-group-text">€</span>
+                {{ form.bid_amount }}
+                <span class="input-group-text">.00</span>
+              </div>
+              {{ form.bid_amount.errors }}
+
+              {{ form.listing_price }}
+              {{ form.has_bid }}
+              
+              <button class="btn btn-primary mt-2" type="submit">Place Bid</button>
+
+            </form> -->
+            </div>
+          </div>
+        </div>
+        {% else %}
+          <div class="row">
+            <div class="col">
+
+              <!-- Button trigger modal -->
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Close Bid
+              </button>
+
+              <!-- Modal -->
+              <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmation</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      Are you sure you want to close the bid?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <form action="{% url 'listing' listing.id %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_name" value="close_bid_form">
+                        <button type="submit" class="btn btn-primary">Close Bid</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- <form action="{% url 'listing' listing.id %}" method="post">
+
+                {% csrf_token %}
+                <input type="hidden" name="form_name" value="close_bid_form">
+                <button class="btn btn-primary mt-2" type="submit">Close Bid</button>
+
+              </form> -->
+            </div>
+          </div>
+        {% endif %} 
+      {% endif %}
+
+        <div class="row">
+          <div class="col">
+            <div class="border-top pt-2 mt-5">
+              <h4 class="text-center">Comments</h4>
+              {% if not comments %}
+              <div class="text-center">Be the first to comment!</div>
+              {% endif %}
+
+              {% for comment in comments %}
+              <div class="mt-2 fw-bold">{{ comment.user }}</div>
+              <div>{{ comment.text }}</div>
+              {% endfor %}
+              <div class="mt-2">
+                <form action="{% url 'listing' listing.id %}" method="post">
+
+                  {% csrf_token %}
+                  <input type="hidden" name="form_name" value="comment_form">
+                  <div class="input-group">
+                    {{ comment_form }}
+                  </div>
+                  <button class="btn btn-primary mt-2" type="submit">Comment</button>
+
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+    {% endif %}
+ 
+  </div>
+{% endblock %}

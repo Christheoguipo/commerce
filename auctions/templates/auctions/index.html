@@ -1,0 +1,38 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Active Listings</h2>
+
+    {% if not listings %}
+        <p>No listings to show.</p>
+    {% endif %}
+
+    {% for listing in listings %}
+    <div class="container-fluid">
+        <div class="row border-top my-2">
+            
+            <div class="col-3 d-flex align-items-center py-2">
+                {% if listing.url %}
+                <a href="{% url 'listing' listing.id %}">
+                    <img class="img-fluid border" src="{{ listing.url }}" alt="{{ listing.title }}">
+                </a>
+                {% else %}
+                <p class="m-auto">Image unavailable.</p>
+                {% endif %}
+            </div>
+            <div class="col mt-3 d-flex flex-column justify-content-between">
+                <div>
+                    <h3 class="font-weight-bold">
+                        <a href="{% url 'listing' listing.id %}">{{ listing.title }}</a>
+                    </h3> 
+                    <p>{{ listing.description }}</p> 
+                </div>
+                <div>
+                    <h4>Price: <span class="font-weight-bold">€{{ listing.price_else_highest_bid }}</span></h4> 
+                    <p>Created {{ listing.date }} by {{ listing.user }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endblock %}
